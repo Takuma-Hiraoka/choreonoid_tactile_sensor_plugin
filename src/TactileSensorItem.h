@@ -10,6 +10,7 @@ class TactileSensor
  public:
   std::string linkName;
   std::vector<Vector3> positions; // リンク座標系でどこに取り付けられているか
+  std::vector<bool> contacts;
   double radius = 0.01; // 接触とみなす半径
 };
 

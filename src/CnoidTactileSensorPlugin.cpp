@@ -4,6 +4,7 @@
 #include <cnoid/ItemManager>
 #include <cnoid/Archive>
 #include <cnoid/YAMLReader>
+#include <cnoid/BodyItem>
 
 #include "TactileSensorItem.h"
 
@@ -25,10 +26,36 @@ bool TactileSensorItem::initialize(ControllerIO* io) {
 }
 
 bool TactileSensorItem::start() {
+  for (int i=0; i<this->tactileSensorList.size(); i++) {
+    cnoid::LinkPtr link_ = this->io_->body()->link(this->tactileSensorList[i].linkName);
+    if (!link_) {
+      this->io_->os() << "\e[0;31m" << "[TactileSensorItem] link [" << this->tactileSensorList[i].linkName << "] not found" << "\e[0m" << std::endl;
+    }
+  }
+
   return true;
 }
 
 bool TactileSensorItem::control() {
+  std::vector<CollisionLinkPairPtr> collisions = this->findOwnerItem<BodyItem>()->collisions(); 
+  for (int tactile_sensor_id=0; tactile_sensor_id<this->tactileSensorList.size(); tactile_sensor_id++) {
+    for (int collision_pair_id=0; collision_pair_id<collisions.size(); collision_pair_id++) {
+      if (! ((this->tactileSensorList[tactile_sensor_id].linkName == collisions[collision_pair_id]->link[0]->name()) || (this->tactileSensorList[tactile_sensor_id].linkName == collisions[collision_pair_id]->link[1]->name()))) { // センサのあるリンクではない
+	continue;
+      } else {
+        Position positionParent = (this->tactileSensorList[tactile_sensor_id].linkName == collisions[collision_pair_id]->link[0]->name()) ? collisions[collision_pair_id]->link[0]->T() : collisions[collision_pair_id]->link[1]->T();
+	for (int in_sensor_id=0; in_sensor_id<this->tactileSensorList[tactile_sensor_id].positions.size(); in_sensor_id++) {
+	  Vector3 position = positionParent.translation() + positionParent.rotation() * this->tactileSensorList[tactile_sensor_id].positions[in_sensor_id];
+	  for (int collision_id=0; collision_id< collisions[collision_pair_id]->collisions.size(); collision_id++) {
+	    if ((position - collisions[collision_pair_id]->collisions[collision_id].point).norm() < this->tactileSensorList[tactile_sensor_id].radius) {
+	      this->tactileSensorList[tactile_sensor_id].contacts[in_sensor_id] = true;
+	      break;
+	    }
+	  }
+	}
+      }
+    }
+  }
   return true;
 }
 
@@ -75,6 +102,7 @@ bool TactileSensorItem::loadConfig(Mapping* topNode) {
       for (int j=0; j < num_dir1; j++) {
 	for (int k=0; k < num_dir2; k++) {
 	  sensor.positions.push_back(point + direction1 * j / num_dir1 + direction2 * k / num_dir2);
+	  sensor.contacts.push_back(false);
 	}
       }
     }

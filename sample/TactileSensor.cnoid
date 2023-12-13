@@ -10,7 +10,7 @@ items:
       plugin: Body
       class: WorldItem
       data: 
-        collisionDetection: false
+        collisionDetection: true
         collisionDetector: AISTCollisionDetector
       children: 
         - 
@@ -47,11 +47,23 @@ items:
           children: 
             -
               id: 3
+              name: "SimpleController"
+              plugin: SimpleController
+              class: SimpleControllerItem
+              data:
+                isNoDelayMode: false
+                controller: "SR1MinimumController"
+                reloading: true
+                inputLinkPositions: false
+            -
+              id: 4
               name: "TactileSensor"
               plugin: TactileSensor
               class: TactileSensorItem
+              data:
+                configFileName: "/home/t-hiraoka/catkin_ws/flexible_mag_tactile_sensor_ws/src/choreonoid_tactile_sensor_plugin/sample/sample.yaml"
         - 
-          id: 4
+          id: 5
           name: "Floor"
           plugin: Body
           class: BodyItem
@@ -73,7 +85,7 @@ items:
             selfCollisionDetection: false
             isEditable: true
         - 
-          id: 5
+          id: 6
           name: "AISTSimulator"
           plugin: Body
           class: AISTSimulatorItem
@@ -83,7 +95,7 @@ items:
 views: 
   "Items": 
     selected: [  ]
-    checked: [ 2, 4 ]
+    checked: [ 2, 5 ]
     expanded: [ 1, 2, 3 ]
   "Scene": 
     floorGrid: false
