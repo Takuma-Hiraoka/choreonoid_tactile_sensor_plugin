@@ -8,6 +8,9 @@
 using namespace cnoid;
 
 bool TactileSensorItem::initialize(ControllerIO* io) {
+  this->io_ = io;
+  this->timeStep_ = io->worldTimeStep();
+
   return true;
 }
 

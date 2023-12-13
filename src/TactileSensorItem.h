@@ -20,6 +20,8 @@ namespace cnoid {
     virtual bool restore(const Archive& archive) override;
 
   protected:
+    cnoid::ControllerIO* io_;
+
     double timeStep_;
   };
 }
