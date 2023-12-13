@@ -1,0 +1,11 @@
+tactile_sensor:
+  -
+    link: RLEG_ANKLE_R
+    type: rectangle
+    point: [-0.065, -0.065, -0.06]
+    direction1: [0.25, 0, 0]
+    direction2: [0, 0.14, 0]
+    num_dir1: 25
+    num_dir2: 14
+    radius: 0.01
+    
