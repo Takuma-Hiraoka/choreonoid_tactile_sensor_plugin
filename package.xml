@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>choreonoid_tactile_sensor_plugin</name>
+  <version>0.0.0</version>
+  <description>The choreonoid_tactile_plugin package</description>
+
+  <maintainer email="t-hiraoka@jsk.imi.i.u-tokyo.ac.jp">Takuma-Hiraoka</maintainer>
+
+  <license>BSD</license>
+
+ <buildtool_depend>catkin</buildtool_depend>
+
+ <depend>choreonoid</depend>
+
+</package>
