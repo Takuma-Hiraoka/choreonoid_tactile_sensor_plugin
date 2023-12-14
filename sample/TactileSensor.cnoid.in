@@ -61,7 +61,7 @@ items:
               plugin: TactileSensor
               class: TactileSensorItem
               data:
-                configFileName: "/home/t-hiraoka/catkin_ws/flexible_mag_tactile_sensor_ws/src/choreonoid_tactile_sensor_plugin/sample/sample.yaml"
+                configFileName: "@PROJECT_SOURCE_DIR@/sample/sample.yaml"
         - 
           id: 5
           name: "Floor"

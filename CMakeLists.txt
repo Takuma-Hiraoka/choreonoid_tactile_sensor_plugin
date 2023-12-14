@@ -20,6 +20,7 @@ link_directories(
 
 add_library(CnoidTactileSensorPlugin SHARED
   src/CnoidTactileSensorPlugin.cpp
+  src/tactile_shm.cpp
   )
 target_link_libraries(CnoidTactileSensorPlugin
   ${catkin_LIBRARIES}
@@ -27,3 +28,6 @@ target_link_libraries(CnoidTactileSensorPlugin
   )
 
 set_target_properties(CnoidTactileSensorPlugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CHOREONOID_PLUGIN_DIR})
+
+## sample
+configure_file(${PROJECT_SOURCE_DIR}/sample/TactileSensor.cnoid.in ${PROJECT_SOURCE_DIR}/sample/TactileSensor.cnoid @ONLY)
