@@ -61,7 +61,7 @@ items:
               plugin: TactileSensor
               class: TactileSensorItem
               data:
-                configFileName: "@PROJECT_SOURCE_DIR@/sample/sample.yaml"
+                configFileName: "@PROJECT_SOURCE_DIR@/sample/sample_config.yaml"
         - 
           id: 5
           name: "Floor"

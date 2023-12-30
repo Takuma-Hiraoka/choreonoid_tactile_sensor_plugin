@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-#define MAX_SENSOR_NUM 10000
+#define MAX_SENSOR_NUM 1000
 
 struct tactile_shm {
    double contact_force[MAX_SENSOR_NUM][3];

@@ -10,9 +10,9 @@ class TactileSensor
 {
  public:
   std::string linkName;
-  std::vector<Vector3> positions; // リンク座標系でどこに取り付けられているか
-  std::vector<Matrix3> rot; // リンク座標系でセンサの姿勢．zがリンク内側方向
-  std::vector<Vector3> depthVector;
+  Vector3 translation; // リンク座標系でどこに取り付けられているか
+  Matrix3 rotation; // リンク座標系でセンサの姿勢．zがリンク内側方向
+  Vector3 depthVector;
   double radius = 0.01; // 接触とみなす半径
 };
 
