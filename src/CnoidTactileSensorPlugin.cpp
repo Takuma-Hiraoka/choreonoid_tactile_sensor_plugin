@@ -41,10 +41,14 @@ bool TactileSensorItem::start() {
 }
 
 bool TactileSensorItem::control() {
-  std::vector<CollisionLinkPairPtr> collisions = this->findOwnerItem<BodyItem>()->collisions(); 
+  std::vector<CollisionLinkPairPtr> collisions = this->findOwnerItem<BodyItem>()->collisions();
+
   for (int tactile_sensor_id=0; tactile_sensor_id<this->tactileSensorList.size(); tactile_sensor_id++) {
+    std::vector<Vector3> depthVector;
+    depthVector.resize(this->tactileSensorList[tactile_sensor_id].depthVector.size());
     for (int collision_pair_id=0; collision_pair_id<collisions.size(); collision_pair_id++) {
-      if (! ((this->tactileSensorList[tactile_sensor_id].linkName == collisions[collision_pair_id]->link[0]->name()) || (this->tactileSensorList[tactile_sensor_id].linkName == collisions[collision_pair_id]->link[1]->name()))) { // センサのあるリンクではない
+      if (! ((this->tactileSensorList[tactile_sensor_id].linkName == collisions[collision_pair_id]->link[0]->name()) ||
+             (this->tactileSensorList[tactile_sensor_id].linkName == collisions[collision_pair_id]->link[1]->name()))) { // センサのあるリンクではない
 	continue;
       } else {
         Position positionParent = (this->tactileSensorList[tactile_sensor_id].linkName == collisions[collision_pair_id]->link[0]->name()) ? collisions[collision_pair_id]->link[0]->T() : collisions[collision_pair_id]->link[1]->T();
@@ -54,15 +58,15 @@ bool TactileSensorItem::control() {
 	  for (int collision_id=0; collision_id< collisions[collision_pair_id]->collisions.size(); collision_id++) {
 	    if ((position - collisions[collision_pair_id]->collisions[collision_id].point).norm() < this->tactileSensorList[tactile_sensor_id].radius) {
               Matrix3 worldSensorRot = positionParent.rotation() * this->tactileSensorList[tactile_sensor_id].rot[in_sensor_id];
-	      this->tactileSensorList[tactile_sensor_id].depthVector[in_sensor_id] = worldSensorRot.inverse() * collisions[collision_pair_id]->collisions[collision_id].normal * collisions[collision_pair_id]->collisions[collision_id].depth * direction;
+	      depthVector[in_sensor_id] = worldSensorRot.inverse() * collisions[collision_pair_id]->collisions[collision_id].normal * collisions[collision_pair_id]->collisions[collision_id].depth * direction;
 	      break;
 	    }
 	  }
 	}
       }
     }
+    this->tactileSensorList[tactile_sensor_id].depthVector = depthVector;
   }
-
   int index = 0;
   for (int i=0; i<this->tactileSensorList.size(); i++) {
     for (int j=0; j<this->tactileSensorList[i].depthVector.size(); j++) {
