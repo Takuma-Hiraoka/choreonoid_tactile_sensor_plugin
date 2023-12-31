@@ -56,7 +56,7 @@ bool TactileSensorItem::control() {
         for (int collision_id=0; collision_id< collisions[collision_pair_id]->collisions.size(); collision_id++) {
           if ((position - collisions[collision_pair_id]->collisions[collision_id].point).norm() < this->tactileSensorList[tactile_sensor_id].radius) {
             Matrix3 worldSensorRot = positionParent.rotation() * this->tactileSensorList[tactile_sensor_id].rotation;
-            depthVector = worldSensorRot.inverse() * collisions[collision_pair_id]->collisions[collision_id].normal * collisions[collision_pair_id]->collisions[collision_id].depth * direction;
+            depthVector = worldSensorRot.inverse() * collisions[collision_pair_id]->collisions[collision_id].normal * collisions[collision_pair_id]->collisions[collision_id].depth * direction * 100000;
             break;
           }
         }
