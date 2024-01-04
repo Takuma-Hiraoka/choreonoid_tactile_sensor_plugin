@@ -121,14 +121,15 @@ bool loadConfig(cnoid::Mapping* topNode, std::vector<TactileSensor>& sensorConfi
       int num_height = info->extract("num_height")->toInt();
       std::string is_angle_first;
       info->extract("is_angle_first", is_angle_first);
+      // TODO 回転座標のx.yも合わせる
       if (is_angle_first == "true") {
 	for (int height=0; height < num_height; height++) {
 	  for (int angle=0; angle < num_angle; angle++) {
 	    TactileSensor sensor;
 	    sensor.linkName = linkName;
-	    sensor.position = origin + cos(init_angle + distance_angle * angle) * direction_x + cos(init_angle + distance_angle * angle) * direction_y;
+	    sensor.position = origin + cos(init_angle + angle_flag * distance_angle * angle) * direction_x + sin(init_angle + angle_flag * distance_angle * angle) * direction_y + direction_cylinder * height_flag * height * distance_height;
 	    sensor.rot = cnoid::VectorXd::Zero(9);
-	    cnoid::Matrix3 rotation = rot * cnoid::rotFromRpy(0,0,init_angle + distance_angle * angle);
+	    cnoid::Matrix3 rotation = rot * cnoid::rotFromRpy(0,0,init_angle + angle_flag * distance_angle * angle) * cnoid::rotFromRpy(0,cnoid::PI / 2, 0.0);
 	    for (int a=0; a<3; a++) {
 	      for (int b=0; b<3; b++) {
 		sensor.rot[a*3+b] = rotation(a,b);
@@ -142,9 +143,9 @@ bool loadConfig(cnoid::Mapping* topNode, std::vector<TactileSensor>& sensorConfi
 	  for (int height=0; height < num_height; height++) {
 	    TactileSensor sensor;
 	    sensor.linkName = linkName;
-	    sensor.position = origin + cos(init_angle + distance_angle * angle) * direction_x + cos(init_angle + distance_angle * angle) * direction_y;
+	    sensor.position = origin + cos(init_angle + angle_flag * distance_angle * angle) * direction_x + sin(init_angle + angle_flag * distance_angle * angle) * direction_y + direction_cylinder * height_flag * height * distance_height;
 	    sensor.rot = cnoid::VectorXd::Zero(9);
-	    cnoid::Matrix3 rotation = rot * cnoid::rotFromRpy(0,0,init_angle + distance_angle * angle);
+	    cnoid::Matrix3 rotation = rot /*親リンクから曲面の中心（z軸中心・x軸開始位置）までの回転*/* cnoid::rotFromRpy(0,0,init_angle + angle_flag * distance_angle * angle) /*回転中心から各回転位置への変換*/* cnoid::rotFromRpy(0,cnoid::PI / 2, 0.0) /*センサ座標への変換*/;
 	    for (int a=0; a<3; a++) {
 	      for (int b=0; b<3; b++) {
 		sensor.rot[a*3+b] = rotation(a,b);
