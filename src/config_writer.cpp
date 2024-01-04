@@ -4,6 +4,7 @@
 #include <cnoid/YAMLReader>
 #include <cnoid/YAMLWriter>
 #include <cnoid/EigenTypes>
+#include <cnoid/EigenUtil>
 class TactileSensor
 {
  public:
@@ -86,6 +87,72 @@ bool loadConfig(cnoid::Mapping* topNode, std::vector<TactileSensor>& sensorConfi
           sensor.rot = rot;
           sensorConfig.push_back(sensor);
         }
+      }
+    } else if (type == "cylinder") {
+      auto origin_ = info->extract("origin");
+      auto& originTmp = *origin_->toListing();
+      cnoid::Vector3 origin = cnoid::Vector3(originTmp[0].toDouble(), originTmp[1].toDouble(), originTmp[2].toDouble());
+      double init_angle = info->extract("init_angle")->toDouble();
+      auto direction_x_ = info->extract("direction_x");
+      auto& direction_xTmp = *direction_x_->toListing();
+      cnoid::Vector3 direction_x = cnoid::Vector3(direction_xTmp[0].toDouble(), direction_xTmp[1].toDouble(), direction_xTmp[2].toDouble());
+      auto direction_y_ = info->extract("direction_y");
+      auto& direction_yTmp = *direction_y_->toListing();
+      cnoid::Vector3 direction_y = cnoid::Vector3(direction_yTmp[0].toDouble(), direction_yTmp[1].toDouble(), direction_yTmp[2].toDouble());
+      double radius = (direction_x).norm();
+      auto rot_ = info->extract("rot");
+      auto& rotTmp = *rot_->toListing();
+      cnoid::Matrix3 rot;
+      rot << rotTmp[0].toDouble(), rotTmp[1].toDouble(), rotTmp[2].toDouble(),
+             rotTmp[3].toDouble(), rotTmp[4].toDouble(), rotTmp[5].toDouble(),
+             rotTmp[6].toDouble(), rotTmp[7].toDouble(), rotTmp[8].toDouble();
+      auto direction_cylinder_ = info->extract("direction_cylinder");
+      auto& direction_cylinderTmp = *direction_cylinder_->toListing();
+      cnoid::Vector3 direction_cylinder = cnoid::Vector3(direction_cylinderTmp[0].toDouble(), direction_cylinderTmp[1].toDouble(), direction_cylinderTmp[2].toDouble());
+      std::string is_direction_angle_same;
+      info->extract("is_direction_angle_same", is_direction_angle_same);
+      double angle_flag = (is_direction_angle_same == "true") ? 1.0 : -1.0;
+      std::string is_direction_height_same;
+      info->extract("is_direction_height_same", is_direction_height_same);
+      double height_flag = (is_direction_height_same == "true") ? 1.0 : -1.0;
+      double distance_angle = info->extract("distance_angle")->toDouble();
+      double distance_height = info->extract("distance_height")->toDouble();
+      int num_angle = info->extract("num_angle")->toInt();
+      int num_height = info->extract("num_height")->toInt();
+      std::string is_angle_first;
+      info->extract("is_angle_first", is_angle_first);
+      if (is_angle_first == "true") {
+	for (int height=0; height < num_height; height++) {
+	  for (int angle=0; angle < num_angle; angle++) {
+	    TactileSensor sensor;
+	    sensor.linkName = linkName;
+	    sensor.position = origin + cos(init_angle + distance_angle * angle) * direction_x + cos(init_angle + distance_angle * angle) * direction_y;
+	    sensor.rot = cnoid::VectorXd::Zero(9);
+	    cnoid::Matrix3 rotation = rot * cnoid::rotFromRpy(0,0,init_angle + distance_angle * angle);
+	    for (int a=0; a<3; a++) {
+	      for (int b=0; b<3; b++) {
+		sensor.rot[a*3+b] = rotation(a,b);
+	      }
+	    }
+	    sensorConfig.push_back(sensor);
+	  }
+	}
+      } else if (is_angle_first == "false") {
+	for (int angle=0; angle < num_angle; angle++) {
+	  for (int height=0; height < num_height; height++) {
+	    TactileSensor sensor;
+	    sensor.linkName = linkName;
+	    sensor.position = origin + cos(init_angle + distance_angle * angle) * direction_x + cos(init_angle + distance_angle * angle) * direction_y;
+	    sensor.rot = cnoid::VectorXd::Zero(9);
+	    cnoid::Matrix3 rotation = rot * cnoid::rotFromRpy(0,0,init_angle + distance_angle * angle);
+	    for (int a=0; a<3; a++) {
+	      for (int b=0; b<3; b++) {
+		sensor.rot[a*3+b] = rotation(a,b);
+	      }
+	    }
+	    sensorConfig.push_back(sensor);
+	  }
+	}
       }
     }
   }

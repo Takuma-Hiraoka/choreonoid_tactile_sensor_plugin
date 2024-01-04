@@ -9,4 +9,19 @@ tactile_sensor:
     num_dir2: 14
     rot: [1, 0, 0, 0, 1, 0, 0, 0, 1]
     radius: 0.01
-    
+  -
+    link: LARM_WRIST_R
+    type: cylinder
+    origin: [0.0, 0.0, -0.2]
+    init_angle: 0.0
+    direction_x: [0.025, 0.0, 0.0]
+    direction_y: [0.0, 0.025, 0.0]
+    rot: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+    direction_cylinder: [0, 0, 1]
+    is_direction_angle_same: true
+    is_direction_height_same: true
+    distance_angle: 1.046
+    distance_height: 0.01
+    num_angle: 6
+    num_height: 20
+    is_angle_first: true
