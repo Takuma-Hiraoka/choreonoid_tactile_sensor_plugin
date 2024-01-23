@@ -92,6 +92,9 @@ bool TactileSensorItem::loadConfig(Mapping* topNode) {
     // link
     std::string linkName;
     info->extract("link", linkName);
+    if (linkName.find("LINK") != std::string::npos) {
+      replaceOtherStr(linkName, "LINK", "JOINT");
+    }
     sensor.linkName = linkName;
     // translation
     auto translation_ = info->extract("translation");
@@ -107,6 +110,17 @@ bool TactileSensorItem::loadConfig(Mapping* topNode) {
     this->io_->os() << "[TactileSensorItem] senser attached to " << linkName << std::endl;
   }
   return true;
+}
+
+std::string TactileSensorItem::replaceOtherStr(std::string &replacedStr, std::string from, std::string to) {
+    const unsigned int pos = replacedStr.find(from);
+    const int len = from.length();
+
+    if (pos == std::string::npos || from.empty()) {
+        return replacedStr;
+    }
+
+    return replacedStr.replace(pos, len, to);
 }
 
 void TactileSensorItem::initialize_shm(int shm_key)

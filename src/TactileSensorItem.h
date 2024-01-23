@@ -32,6 +32,7 @@ class TactileSensor
     virtual bool restore(const Archive& archive) override;
 
     bool loadConfig(Mapping* topNode);
+    std::string replaceOtherStr(std::string &replacedStr, std::string from, std::string to);
     void initialize_shm(int shm_key);
 
   protected:
