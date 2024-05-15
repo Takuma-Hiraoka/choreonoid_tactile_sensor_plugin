@@ -9,15 +9,13 @@ items:
       name: "World"
       plugin: Body
       class: WorldItem
-      data: 
-        collisionDetection: true
-        collisionDetector: AISTCollisionDetector
       children: 
         - 
           id: 2
           name: "SR1"
           plugin: Body
           class: BodyItem
+          is_checked: true
           data: 
             modelFile: "${SHARE}/model/SR1/SR1.body"
             currentBaseLink: "WAIST"
@@ -62,11 +60,13 @@ items:
               class: TactileSensorItem
               data:
                 configFileName: "@PROJECT_SOURCE_DIR@/sample/sample_config.yaml"
+                isNoDelayMode: true # シミュレーションエンジンが毎周期、接触情報削除->計算->接触情報書き込み、と処理を行うので、計算中に接触情報を読み込んでしまわないようにControllerItemの`isNoDelayMode: true`またはSimulatorItemの`controllerThreads: false`で使用せよ.
         - 
           id: 5
           name: "Floor"
           plugin: Body
           class: BodyItem
+          is_checked: true
           data: 
             modelFile: "${SHARE}/model/misc/floor.body"
             currentBaseLink: "BASE"
@@ -92,19 +92,4 @@ items:
           data: 
             realtimeSync: true
             recording: "full"
-views: 
-  "Items": 
-    selected: [  ]
-    checked: [ 2, 5 ]
-    expanded: [ 1, 2, 3 ]
-  "Scene": 
-    floorGrid: false
-toolbars: 
-  "TimeBar": 
-    minTime: 0
-    maxTime: 15
-    frameRate: 500
-    currentTime: 0
-    speedScale: 1
-    syncToOngoingUpdates: true
-    autoExpansion: true
+            controllerThreads: false # シミュレーションエンジンが毎周期、接触情報削除->計算->接触情報書き込み、と処理を行うので、計算中に接触情報を読み込んでしまわないようにControllerItemの`isNoDelayMode: true`またはSimulatorItemの`controllerThreads: false`で使用せよ.

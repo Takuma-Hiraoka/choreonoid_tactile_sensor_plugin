@@ -22,11 +22,6 @@ struct tactile_shm {
 #endif
 };
 
-int shm_lock_init(struct tactile_shm *shm);
-int cmd_shm_lock(struct tactile_shm *shm);
-int info_shm_lock(struct tactile_shm *shm);
-int cmd_shm_unlock(struct tactile_shm *shm);
-int info_shm_unlock(struct tactile_shm *shm);
 void *set_shared_memory(key_t _key, size_t _size);
 
 #endif
