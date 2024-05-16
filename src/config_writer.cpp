@@ -75,16 +75,19 @@ bool loadConfig(cnoid::Mapping* topNode, std::vector<TactileSensor>& sensorConfi
       int num_dir2 = info->extract("num_dir2")->toInt();
       auto rot_ = info->extract("rot");
       auto& rotTmp = *rot_->toListing();
-      cnoid::VectorXd rot = cnoid::VectorXd::Zero(9);
+      cnoid::Matrix3 rot;
       rot << rotTmp[0].toDouble(), rotTmp[1].toDouble(), rotTmp[2].toDouble(),
              rotTmp[3].toDouble(), rotTmp[4].toDouble(), rotTmp[5].toDouble(),
              rotTmp[6].toDouble(), rotTmp[7].toDouble(), rotTmp[8].toDouble();
+      cnoid::AngleAxisd rot2{rot};
+      cnoid::VectorX rotVec(4);
+      rotVec << rot2.axis()[0], rot2.axis()[1], rot2.axis()[2], rot2.angle();
       for (int j=0; j < num_dir1; j++) {
         for (int k=0; k < num_dir2; k++) {
           TactileSensor sensor;
           sensor.linkName = linkName;
           sensor.position = point + direction1 * j / num_dir1 + direction2 * k / num_dir2;
-          sensor.rot = rot;
+          sensor.rot = rotVec;
           sensorConfig.push_back(sensor);
         }
       }
@@ -128,13 +131,10 @@ bool loadConfig(cnoid::Mapping* topNode, std::vector<TactileSensor>& sensorConfi
 	    TactileSensor sensor;
 	    sensor.linkName = linkName;
 	    sensor.position = origin + cos(init_angle + angle_flag * distance_angle * angle) * direction_x + sin(init_angle + angle_flag * distance_angle * angle) * direction_y + direction_cylinder * height_flag * height * distance_height;
-	    sensor.rot = cnoid::VectorXd::Zero(9);
+            sensor.rot = cnoid::VectorXd::Zero(4);
 	    cnoid::Matrix3 rotation = rot * cnoid::rotFromRpy(0,0,init_angle + angle_flag * distance_angle * angle) * cnoid::rotFromRpy(0,cnoid::PI / 2, 0.0);
-	    for (int a=0; a<3; a++) {
-	      for (int b=0; b<3; b++) {
-		sensor.rot[a*3+b] = rotation(a,b);
-	      }
-	    }
+            cnoid::AngleAxisd rot2{rotation};
+            sensor.rot << rot2.axis()[0], rot2.axis()[1], rot2.axis()[2], rot2.angle();
 	    sensorConfig.push_back(sensor);
 	  }
 	}
@@ -144,13 +144,10 @@ bool loadConfig(cnoid::Mapping* topNode, std::vector<TactileSensor>& sensorConfi
 	    TactileSensor sensor;
 	    sensor.linkName = linkName;
 	    sensor.position = origin + cos(init_angle + angle_flag * distance_angle * angle) * direction_x + sin(init_angle + angle_flag * distance_angle * angle) * direction_y + direction_cylinder * height_flag * height * distance_height;
-	    sensor.rot = cnoid::VectorXd::Zero(9);
+	    sensor.rot = cnoid::VectorXd::Zero(4);
 	    cnoid::Matrix3 rotation = rot /*親リンクから曲面の中心（z軸中心・x軸開始位置）までの回転*/* cnoid::rotFromRpy(0,0,init_angle + angle_flag * distance_angle * angle) /*回転中心から各回転位置への変換*/* cnoid::rotFromRpy(0,cnoid::PI / 2, 0.0) /*センサ座標への変換*/;
-	    for (int a=0; a<3; a++) {
-	      for (int b=0; b<3; b++) {
-		sensor.rot[a*3+b] = rotation(a,b);
-	      }
-	    }
+            cnoid::AngleAxisd rot2{rotation};
+            sensor.rot << rot2.axis()[0], rot2.axis()[1], rot2.axis()[2], rot2.angle();
 	    sensorConfig.push_back(sensor);
 	  }
 	}
@@ -169,6 +166,7 @@ bool writeConfig(cnoid::YAMLWriter* writer, std::vector<TactileSensor> sensorCon
     writer->startMapping();
     writer->startListing();
     {
+      writer->putKeyValue("name","tactile_sensor"+std::to_string(i));
       writer->putKeyValue("link",sensorConfig[i].linkName);
       writer->putKey("translation");
       writer->startFlowStyleListing();

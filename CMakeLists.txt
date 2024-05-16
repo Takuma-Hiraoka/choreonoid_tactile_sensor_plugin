@@ -21,7 +21,7 @@ link_directories(
 
 add_library(CnoidTactileSensorPlugin SHARED
   src/CnoidTactileSensorPlugin.cpp
-  src/tactile_shm.cpp
+  src/TactileSensorItem.cpp
   )
 target_link_libraries(CnoidTactileSensorPlugin
   ${catkin_LIBRARIES}
