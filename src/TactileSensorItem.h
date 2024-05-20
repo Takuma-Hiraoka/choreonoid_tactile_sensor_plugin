@@ -42,6 +42,8 @@ namespace cnoid {
 
     struct tactile_shm *t_shm;
     int shmKey_ = 6555;
+
+    double normalAngle = M_PI / 3.0; // 接触とみなす法線ベクトルの角度の範囲. 0なら垂直.
   };
 }
 

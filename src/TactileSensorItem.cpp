@@ -8,6 +8,7 @@
 #include <cnoid/CollisionLinkPair>
 #include <cnoid/SceneGraph>
 #include <iostream>
+#include <unordered_map>
 
 namespace cnoid {
   void TactileSensorItem::initializeClass(ExtensionManager* ext)
@@ -61,11 +62,11 @@ namespace cnoid {
           if(this->io_->body()->link(sensor.linkName)){
             sensor.link = this->io_->body()->link(sensor.linkName);
           }else{
-            for(int i=0;i<this->io_->body()->numLinks() && !(sensor.link);i++){
-              cnoid::SgGroup* shape = this->io_->body()->link(i)->shape();
+            for(int l=0;l<this->io_->body()->numLinks() && !(sensor.link);l++){
+              cnoid::SgGroup* shape = this->io_->body()->link(l)->shape();
               for(int j=0;j<shape->numChildObjects();j++){
                 if(shape->child(j)->name() == sensor.linkName){
-                  sensor.link = this->io_->body()->link(i);
+                  sensor.link = this->io_->body()->link(l);
                   break;
                 }
               }
@@ -103,16 +104,28 @@ namespace cnoid {
   }
 
   bool TactileSensorItem::control() {
+    std::unordered_map<cnoid::LinkPtr, std::vector<cnoid::Link::ContactPoint>> contactPointsMap;
+    for(int i=0;i<this->io_->body()->numLinks();i++){
+      contactPointsMap[this->io_->body()->link(i)] = this->io_->body()->link(i)->contactPoints();
+    }
+
     for (int i=0; i<this->tactileSensorList_.size(); i++) {
       cnoid::Vector3 f = cnoid::Vector3::Zero(); // センサ系. センサが受ける力
       if(this->tactileSensorList_[i].link) {
-        const std::vector<cnoid::Link::ContactPoint>& contactPoints = this->tactileSensorList_[i].link->contactPoints();
+        std::vector<cnoid::Link::ContactPoint>& contactPoints = contactPointsMap[this->tactileSensorList_[i].link];
         cnoid::Vector3 p = this->tactileSensorList_[i].link->T() * this->tactileSensorList_[i].translation; // world系. センサ位置
         cnoid::Matrix3 R = this->tactileSensorList_[i].link->R() * this->tactileSensorList_[i].rotation; // world系. センサ姿勢
+        cnoid::Vector3 normal = R * cnoid::Vector3::UnitZ(); // world系. from another object to this link
 
-        for (int c=0; c<contactPoints.size(); c++) {
-          if((p - contactPoints[c].position()).norm() > this->tactileSensorList_[i].radius) continue;
-          f += R.transpose() * contactPoints[c].force()/*world系. リンクが受ける力*/;
+        for (int c=0; c<contactPoints.size();) {
+          if((p - contactPoints[c].position()).norm() > this->tactileSensorList_[i].radius ||
+             std::acos(std::min(1.0,std::max(-1.0,contactPoints[c].normal().dot(normal)))) > this->normalAngle) {
+            c++;
+            continue;
+          }else{
+            f += R.transpose() * contactPoints[c].force()/*world系. リンクが受ける力*/;
+            contactPoints.erase(contactPoints.begin()+c); // 1つの接触を近くの接触センサで重複カウントすることを防ぐため.
+          }
         }
       }
       this->tactileSensorList_[i].f = f;
