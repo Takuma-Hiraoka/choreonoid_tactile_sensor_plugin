@@ -60,7 +60,6 @@ items:
               class: TactileSensorItem
               data:
                 configFileName: "@PROJECT_SOURCE_DIR@/sample/sample_config.yaml"
-                isNoDelayMode: true # シミュレーションエンジンが毎周期、接触情報削除->計算->接触情報書き込み、と処理を行うので、計算中に接触情報を読み込んでしまわないようにControllerItemの`isNoDelayMode: true`またはSimulatorItemの`controllerThreads: false`で使用せよ.
         - 
           id: 5
           name: "Floor"
@@ -92,4 +91,3 @@ items:
           data: 
             realtimeSync: true
             recording: "full"
-            controllerThreads: false # シミュレーションエンジンが毎周期、接触情報削除->計算->接触情報書き込み、と処理を行うので、計算中に接触情報を読み込んでしまわないようにControllerItemの`isNoDelayMode: true`またはSimulatorItemの`controllerThreads: false`で使用せよ.

@@ -3,7 +3,7 @@
 TactileSensorPlugin
 
 ## TactileSensorItem
-接触センサのシミュレーション. 値を共有メモリに書き込む. シミュレーションエンジンが毎周期、接触情報削除->計算->接触情報書き込み、と処理を行うので、計算中に接触情報を読み込んでしまわないようにControllerItemの`isNoDelayMode: true`またはSimulatorItemの`controllerThreads: false`で使用せよ.
+接触センサのシミュレーション. 値を共有メモリに書き込む.
 
 ###parameters
 - `shmKey` (int. default 6555): センサ値を書き込む共有メモリのキー.

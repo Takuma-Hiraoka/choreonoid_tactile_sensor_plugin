@@ -3,6 +3,7 @@
 
 #include <cnoid/ControllerItem>
 #include "tactile_shm.h"
+#include <unordered_map>
 
 namespace cnoid {
 
@@ -28,6 +29,7 @@ namespace cnoid {
     virtual bool initialize(ControllerIO* io) override;
 
     virtual double timeStep() const override { return timeStep_;};
+    virtual void input() override;
     virtual bool control() override;
 
     virtual bool store(Archive& archive) override;
@@ -44,6 +46,8 @@ namespace cnoid {
     int shmKey_ = 6555;
 
     double normalAngle = M_PI / 3.0; // 接触とみなす法線ベクトルの角度の範囲. 0なら垂直.
+
+    std::unordered_map<cnoid::LinkPtr, std::vector<cnoid::Link::ContactPoint>> contactPointsMap_; // input()で取得し、control()で使用される
   };
 }
 

@@ -8,7 +8,6 @@
 #include <cnoid/CollisionLinkPair>
 #include <cnoid/SceneGraph>
 #include <iostream>
-#include <unordered_map>
 
 namespace cnoid {
   void TactileSensorItem::initializeClass(ExtensionManager* ext)
@@ -103,16 +102,19 @@ namespace cnoid {
     return true;
   }
 
-  bool TactileSensorItem::control() {
-    std::unordered_map<cnoid::LinkPtr, std::vector<cnoid::Link::ContactPoint>> contactPointsMap;
+  void TactileSensorItem::input() {
     for(int i=0;i<this->io_->body()->numLinks();i++){
-      contactPointsMap[this->io_->body()->link(i)] = this->io_->body()->link(i)->contactPoints();
+      this->contactPointsMap_[this->io_->body()->link(i)] = this->io_->body()->link(i)->contactPoints();
     }
+  }
 
+  // The body oject given in the initalized function() must not be accessed
+  // in this function. The access should be done in input() and output().
+  bool TactileSensorItem::control() {
     for (int i=0; i<this->tactileSensorList_.size(); i++) {
       cnoid::Vector3 f = cnoid::Vector3::Zero(); // センサ系. センサが受ける力
       if(this->tactileSensorList_[i].link) {
-        std::vector<cnoid::Link::ContactPoint>& contactPoints = contactPointsMap[this->tactileSensorList_[i].link];
+        std::vector<cnoid::Link::ContactPoint>& contactPoints = this->contactPointsMap_[this->tactileSensorList_[i].link];
         cnoid::Vector3 p = this->tactileSensorList_[i].link->T() * this->tactileSensorList_[i].translation; // world系. センサ位置
         cnoid::Matrix3 R = this->tactileSensorList_[i].link->R() * this->tactileSensorList_[i].rotation; // world系. センサ姿勢
         cnoid::Vector3 normal = R * cnoid::Vector3::UnitZ(); // world系. from another object to this link
