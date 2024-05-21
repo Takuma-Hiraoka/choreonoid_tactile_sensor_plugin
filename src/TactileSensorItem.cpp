@@ -93,6 +93,11 @@ namespace cnoid {
                                                   cnoid::Vector3{rotationTmp->at(0)->toDouble(), rotationTmp->at(1)->toDouble(), rotationTmp->at(2)->toDouble()}).toRotationMatrix();
             }
           }
+          // radius
+          cnoid::ValueNodePtr radius_ = info->extract("radius");
+          if(radius_ && radius_->isScalar()){
+            sensor.radius = radius_->toDouble();
+          }
           this->tactileSensorList_[i] = sensor;
         }
       }

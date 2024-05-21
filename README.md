@@ -11,8 +11,9 @@ TactileSensorPlugin
 ```yaml
 tactile_sensor:
   -
-    name: tactile_sensor0 # センサの名前. 重複禁止
-    link: RLEG_ANKLE_R # 親リンク名. (VRMLのjoint名ではなく、URDFのリンク名)
+    name: tactile_sensor0 # センサの名前. 重複禁止. 必須
+    link: RLEG_ANKLE_R # 親リンク名. (VRMLのjoint名ではなく、URDFのリンク名). 必須
     translation: [ -0.065, -0.065, -0.06 ] # 親リンク相対
     rotation: [ 1, 0, 0, 0 ] # 親リンク相対. Z軸正がfrom another object to this sensorの方向. [axis-x, axis-y, axis-z, angle(rad)]
+    radius: 0.01 # 接触を検出する半径
 ```
