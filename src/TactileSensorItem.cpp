@@ -8,6 +8,7 @@
 #include <cnoid/CollisionLinkPair>
 #include <cnoid/SceneGraph>
 #include <iostream>
+#include <unordered_map>
 
 namespace cnoid {
   void TactileSensorItem::initializeClass(ExtensionManager* ext)
@@ -35,6 +36,14 @@ namespace cnoid {
       }
     }
 
+    std::unordered_map<std::string, std::string> URDFToVRMLLinkNameMap;
+    for(int l=0;l<this->io_->body()->numLinks() ; l++){
+      cnoid::SgGroup* shape = this->io_->body()->link(l)->shape();
+      if(shape && shape->numChildObjects() > 0 && shape->child(0)->name().size()!=0){
+        URDFToVRMLLinkNameMap[shape->child(0)->name()] = this->io_->body()->link(l)->name();
+      }
+    }
+
     cnoid::YAMLReader reader;
     cnoid::MappingPtr node;
     try {
@@ -58,18 +67,10 @@ namespace cnoid {
             continue;
           }
           // link
-          if(this->io_->body()->link(sensor.linkName)){
+          if(URDFToVRMLLinkNameMap.find(sensor.linkName) != URDFToVRMLLinkNameMap.end()){
+            sensor.link = this->io_->body()->link(URDFToVRMLLinkNameMap[sensor.linkName]);
+          }else if(this->io_->body()->link(sensor.linkName)){
             sensor.link = this->io_->body()->link(sensor.linkName);
-          }else{
-            for(int l=0;l<this->io_->body()->numLinks() && !(sensor.link);l++){
-              cnoid::SgGroup* shape = this->io_->body()->link(l)->shape();
-              for(int j=0;j<shape->numChildObjects();j++){
-                if(shape->child(j)->name() == sensor.linkName){
-                  sensor.link = this->io_->body()->link(l);
-                  break;
-                }
-              }
-            }
           }
           if (!(sensor.link)) {
             this->io_->os() << "\e[0;31m" << "[TactileSensorItem] link [" << sensor.linkName << "] not found" << "\e[0m" << std::endl;
