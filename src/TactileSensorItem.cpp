@@ -8,6 +8,7 @@
 #include <cnoid/CollisionLinkPair>
 #include <cnoid/SceneGraph>
 #include <iostream>
+#include <unordered_map>
 
 namespace cnoid {
   void TactileSensorItem::initializeClass(ExtensionManager* ext)
@@ -35,6 +36,14 @@ namespace cnoid {
       }
     }
 
+    std::unordered_map<std::string, std::string> URDFToVRMLLinkNameMap;
+    for(int l=0;l<this->io_->body()->numLinks() ; l++){
+      cnoid::SgGroup* shape = this->io_->body()->link(l)->shape();
+      if(shape && shape->numChildObjects() > 0 && shape->child(0)->name().size()!=0){
+        URDFToVRMLLinkNameMap[shape->child(0)->name()] = this->io_->body()->link(l)->name();
+      }
+    }
+
     cnoid::YAMLReader reader;
     cnoid::MappingPtr node;
     try {
@@ -58,18 +67,10 @@ namespace cnoid {
             continue;
           }
           // link
-          if(this->io_->body()->link(sensor.linkName)){
+          if(URDFToVRMLLinkNameMap.find(sensor.linkName) != URDFToVRMLLinkNameMap.end()){
+            sensor.link = this->io_->body()->link(URDFToVRMLLinkNameMap[sensor.linkName]);
+          }else if(this->io_->body()->link(sensor.linkName)){
             sensor.link = this->io_->body()->link(sensor.linkName);
-          }else{
-            for(int i=0;i<this->io_->body()->numLinks() && !(sensor.link);i++){
-              cnoid::SgGroup* shape = this->io_->body()->link(i)->shape();
-              for(int j=0;j<shape->numChildObjects();j++){
-                if(shape->child(j)->name() == sensor.linkName){
-                  sensor.link = this->io_->body()->link(i);
-                  break;
-                }
-              }
-            }
           }
           if (!(sensor.link)) {
             this->io_->os() << "\e[0;31m" << "[TactileSensorItem] link [" << sensor.linkName << "] not found" << "\e[0m" << std::endl;
@@ -93,6 +94,11 @@ namespace cnoid {
                                                   cnoid::Vector3{rotationTmp->at(0)->toDouble(), rotationTmp->at(1)->toDouble(), rotationTmp->at(2)->toDouble()}).toRotationMatrix();
             }
           }
+          // radius
+          cnoid::ValueNodePtr radius_ = info->extract("radius");
+          if(radius_ && radius_->isScalar()){
+            sensor.radius = radius_->toDouble();
+          }
           this->tactileSensorList_[i] = sensor;
         }
       }
@@ -102,17 +108,32 @@ namespace cnoid {
     return true;
   }
 
+  void TactileSensorItem::input() {
+    for(int i=0;i<this->io_->body()->numLinks();i++){
+      this->contactPointsMap_[this->io_->body()->link(i)] = this->io_->body()->link(i)->contactPoints();
+    }
+  }
+
+  // The body oject given in the initalized function() must not be accessed
+  // in this function. The access should be done in input() and output().
   bool TactileSensorItem::control() {
     for (int i=0; i<this->tactileSensorList_.size(); i++) {
       cnoid::Vector3 f = cnoid::Vector3::Zero(); // センサ系. センサが受ける力
       if(this->tactileSensorList_[i].link) {
-        const std::vector<cnoid::Link::ContactPoint>& contactPoints = this->tactileSensorList_[i].link->contactPoints();
+        std::vector<cnoid::Link::ContactPoint>& contactPoints = this->contactPointsMap_[this->tactileSensorList_[i].link];
         cnoid::Vector3 p = this->tactileSensorList_[i].link->T() * this->tactileSensorList_[i].translation; // world系. センサ位置
         cnoid::Matrix3 R = this->tactileSensorList_[i].link->R() * this->tactileSensorList_[i].rotation; // world系. センサ姿勢
+        cnoid::Vector3 normal = R * cnoid::Vector3::UnitZ(); // world系. from another object to this link
 
-        for (int c=0; c<contactPoints.size(); c++) {
-          if((p - contactPoints[c].position()).norm() > this->tactileSensorList_[i].radius) continue;
-          f += R.transpose() * contactPoints[c].force()/*world系. リンクが受ける力*/;
+        for (int c=0; c<contactPoints.size();) {
+          if((p - contactPoints[c].position()).norm() > this->tactileSensorList_[i].radius ||
+             std::acos(std::min(1.0,std::max(-1.0,contactPoints[c].normal().dot(normal)))) > this->normalAngle) {
+            c++;
+            continue;
+          }else{
+            f += R.transpose() * contactPoints[c].force()/*world系. リンクが受ける力*/;
+            contactPoints.erase(contactPoints.begin()+c); // 1つの接触を近くの接触センサで重複カウントすることを防ぐため.
+          }
         }
       }
       this->tactileSensorList_[i].f = f;

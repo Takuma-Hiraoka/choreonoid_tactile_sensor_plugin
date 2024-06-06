@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(choreonoid_tactile_sensor_plugin)
 
-add_compile_options(-std=c++11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_BUILD_TYPE Release)
 
 find_package(catkin REQUIRED COMPONENTS)
@@ -36,8 +36,8 @@ link_directories(${Boost_LIBRARY_DIRS})
 add_executable(config_writer src/config_writer.cpp)
 target_link_libraries(config_writer ${CHOREONOID_BODY_LIBRARIES} ${Boost_PROGRAM_OPTIONS_LIBRARY})
 
-add_custom_target(make_SAMPLE_CONFIG ALL
-  COMMAND ${CATKIN_DEVEL_PREFIX}/lib/choreonoid_tactile_sensor_plugin/config_writer -i ${PROJECT_SOURCE_DIR}/sample/sample.yaml -o ${PROJECT_SOURCE_DIR}/sample/sample_config.yaml)
+# add_custom_target(make_SAMPLE_CONFIG ALL
+#   COMMAND ${CATKIN_DEVEL_PREFIX}/lib/choreonoid_tactile_sensor_plugin/config_writer -i ${PROJECT_SOURCE_DIR}/sample/sample.yaml -o ${PROJECT_SOURCE_DIR}/sample/sample_config.yaml)
 
 ## sample
 configure_file(${PROJECT_SOURCE_DIR}/sample/TactileSensor.cnoid.in ${PROJECT_SOURCE_DIR}/sample/TactileSensor.cnoid @ONLY)
