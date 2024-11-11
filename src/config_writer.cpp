@@ -132,7 +132,7 @@ bool loadConfig(cnoid::Mapping* topNode, std::vector<TactileSensor>& sensorConfi
 	    sensor.linkName = linkName;
 	    sensor.position = origin + cos(init_angle + angle_flag * distance_angle * angle) * direction_x + sin(init_angle + angle_flag * distance_angle * angle) * direction_y + direction_cylinder * height_flag * height * distance_height;
             sensor.rot = cnoid::VectorXd::Zero(4);
-	    cnoid::Matrix3 rotation = rot * cnoid::rotFromRpy(0,0,init_angle + angle_flag * distance_angle * angle) * cnoid::rotFromRpy(0,cnoid::PI / 2, 0.0);
+	    cnoid::Matrix3 rotation = rot * cnoid::rotFromRpy(0,0,init_angle + angle_flag * distance_angle * angle) * cnoid::rotFromRpy(cnoid::PI / 2, 0.0, 0.0);
             cnoid::AngleAxisd rot2{rotation};
             sensor.rot << rot2.axis()[0], rot2.axis()[1], rot2.axis()[2], rot2.angle();
 	    sensorConfig.push_back(sensor);
